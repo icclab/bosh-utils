@@ -4,6 +4,7 @@ import (
 	"code.cloudfoundry.org/credhub-cli/credhub"
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"fmt"
+	"github.com/atotto/clipboard"
 	"os"
 )
 
@@ -32,7 +33,8 @@ func main() {
 }
 
 func printHelp() {
-	fmt.Println("Usage: [VAR_NAME]\nUsage: [VAR_NAME] -v (Gives details about retrieved variable)\nUsage: grep [SEARCH_TERM]")
+	fmt.Println("Usage: [VAR_NAME]\nUsage: [VAR_NAME] -v (Shows the value)\nUsage: [VAR_NAME] -V (Shows all the details for this secret)")
+	fmt.Println("Usage: grep [SEARCH_TERM]")
 }
 
 func grep() {
@@ -49,10 +51,13 @@ func getVar() {
 		return
 	}
 
-	if len(os.Args) > 2 && os.Args[2] == "-v" {
+	_ = clipboard.WriteAll(string(c.Value))
+	if len(os.Args) > 2 && os.Args[2] == "-V" {
 		fmt.Print("ID: ", c.Id, "\n", "Base: ", c.Base, "\n", "Metadata: ", c.Metadata, "\n",
 			"Name: ", c.Name, "\n", "Type: ", c.Type, "\n", "Value: ", c.Value, "\n", "Creation Date: ", c.VersionCreatedAt, "\n")
-	} else {
+	} else if len(os.Args) > 2 && os.Args[2] == "-v" {
 		fmt.Println(c.Name+":", c.Value)
+	} else {
+		fmt.Println(c.Name, "copied to clipboard!")
 	}
 }
