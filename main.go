@@ -10,17 +10,17 @@ import (
 var ch *credhub.CredHub
 
 func main() {
+	if len(os.Args) < 2 || os.Args[1] == "-h" || os.Args[1] == "--help" {
+		printHelp()
+		return
+	}
+
 	var err error
 	ch, err = credhub.New("https://192.168.200.6:8844", credhub.CaCerts(os.Getenv("CREDHUB_CA_CERT")),
 		credhub.Auth(auth.UaaClientCredentials(os.Getenv("CREDHUB_CLIENT"), os.Getenv("CREDHUB_SECRET"))))
 
 	if err != nil {
 		fmt.Println("Failed to set a new Credhub target.", err)
-		return
-	}
-
-	if len(os.Args) < 2 || os.Args[1] == "-h" || os.Args[1] == "--help" {
-		printHelp()
 		return
 	}
 
@@ -32,7 +32,7 @@ func main() {
 }
 
 func printHelp() {
-	fmt.Println("Usage: [VAR_NAME]\nUsage: [VAR_NAME] -v (Gives details about retrieved variable\nUsage: grep [SEARCH_TERM]")
+	fmt.Println("Usage: [VAR_NAME]\nUsage: [VAR_NAME] -v (Gives details about retrieved variable)\nUsage: grep [SEARCH_TERM]")
 }
 
 func grep() {
