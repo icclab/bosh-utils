@@ -1,0 +1,6 @@
+package: github.engineering.zhaw.ch/kaio/get-credhub-var
+import:
+- package: code.cloudfoundry.org/credhub-cli
+  subpackages:
+  - credhub
+  - credhub/auth
