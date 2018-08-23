@@ -5,10 +5,13 @@ import (
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"fmt"
 	"github.com/atotto/clipboard"
+	"github.com/fatih/color"
 	"os"
 )
 
 var ch *credhub.CredHub
+var verbose bool
+var xVerbose bool
 
 func main() {
 	if len(os.Args) < 2 || os.Args[1] == "-h" || os.Args[1] == "--help" {
@@ -25,39 +28,72 @@ func main() {
 		return
 	}
 
-	if os.Args[1] == "grep" {
-		grep()
-	} else {
-		getVar()
+	for _, arg := range os.Args {
+		switch arg {
+		case "-v":
+			verbose = true
+		case "-V":
+			xVerbose = true
+		}
 	}
+
+	getVar()
 }
 
 func printHelp() {
 	fmt.Println("Usage: [VAR_NAME]\nUsage: [VAR_NAME] -v (Shows the value)\nUsage: [VAR_NAME] -V (Shows all the details for this secret)")
-	fmt.Println("Usage: grep [SEARCH_TERM]")
+	fmt.Println("\nIf a single, exactly matching secret is found, then it is copied to clipboard. If not, then a search is done using the provided name," +
+		"and the names of any secrets found are printed.")
+	fmt.Println("\nNote that '-V' only works when one match is found, however '-v' will still show the values even if many matches are found.")
 }
 
-func grep() {
-	r, _ := ch.FindByPartialName(os.Args[2])
-	for i := 0; i < len(r.Credentials); i++ {
-		c, _ := ch.GetLatestValue(r.Credentials[i].Name)
-		fmt.Println(r.Credentials[i].Name+":", c.Value)
+func grep(searchTerm string) {
+	r, _ := ch.FindByPartialName(searchTerm)
+	if verbose {
+		for i := 0; i < len(r.Credentials); i++ {
+			c, _ := ch.GetLatestValue(r.Credentials[i].Name)
+			fmt.Println(r.Credentials[i].Name+":", color.YellowString(string(c.Value)))
+		}
+	} else {
+		for i := 0; i < len(r.Credentials); i++ {
+			fmt.Println(r.Credentials[i].Name)
+		}
 	}
 }
 
 func getVar() {
 	c, _ := ch.GetLatestValue(os.Args[1])
+
+	//If can't find directly, search all paths
 	if c.Name == "" {
-		return
+		r, _ := ch.FindByPartialName(os.Args[1])
+		switch len(r.Credentials) {
+		case 0:
+			fmt.Println(color.HiRedString(os.Args[1]), "not found under any path")
+			return
+		case 1:
+			c, _ = ch.GetLatestValue(r.Credentials[0].Name)
+		default:
+			grep(os.Args[1])
+			return
+		}
 	}
 
+	//If we found only one matching value then copy to clipboard and print according to required verbosity
 	_ = clipboard.WriteAll(string(c.Value))
-	if len(os.Args) > 2 && os.Args[2] == "-V" {
-		fmt.Print("ID: ", c.Id, "\n", "Base: ", c.Base, "\n", "Metadata: ", c.Metadata, "\n",
-			"Name: ", c.Name, "\n", "Type: ", c.Type, "\n", "Value: ", c.Value, "\n", "Creation Date: ", c.VersionCreatedAt, "\n")
-	} else if len(os.Args) > 2 && os.Args[2] == "-v" {
-		fmt.Println(c.Name+":", c.Value)
+	if xVerbose {
+		fmt.Println(color.GreenString("ID:"), c.Id)
+		fmt.Println(color.GreenString("Base:"), c.Base)
+		fmt.Println(color.GreenString("Metadata:"), c.Metadata)
+		fmt.Println(color.GreenString("Name:"), color.RedString(c.Name))
+		fmt.Println(color.GreenString("Type:"), c.Type)
+		fmt.Println(color.GreenString("Value:"), color.YellowString(string(c.Value)))
+		fmt.Println(color.GreenString("Creation Date:"), c.VersionCreatedAt)
+
+		fmt.Println("Value copied clipboard!")
+	} else if verbose {
+		fmt.Println(color.RedString(c.Name)+":", color.YellowString(string(c.Value)), "(Copied!)")
 	} else {
-		fmt.Println(c.Name, "copied to clipboard!")
+		fmt.Println(color.RedString(c.Name), "copied to clipboard!")
 	}
 }
