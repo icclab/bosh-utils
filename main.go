@@ -7,6 +7,7 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
 	"os"
+	"strings"
 )
 
 var ch *credhub.CredHub
@@ -20,7 +21,7 @@ func main() {
 	}
 
 	var err error
-	ch, err = credhub.New("https://192.168.200.6:8844", credhub.CaCerts(os.Getenv("CREDHUB_CA_CERT")),
+	ch, err = credhub.New(strings.Replace(os.Getenv("BOSH_ENVIRONMENT"), "25555", "8844", 1), credhub.CaCerts(os.Getenv("CREDHUB_CA_CERT")),
 		credhub.Auth(auth.UaaClientCredentials(os.Getenv("CREDHUB_CLIENT"), os.Getenv("CREDHUB_SECRET"))))
 
 	if err != nil {
