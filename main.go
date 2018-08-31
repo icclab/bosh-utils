@@ -71,6 +71,8 @@ func getVar() {
 		case 0:
 			fmt.Println(color.RedString(os.Args[1]), "not found under any path")
 			return
+		case 1:
+			c, _ = ch.GetLatestVersion(r.Credentials[0].Name)
 		default:
 			grep(r)
 			return
