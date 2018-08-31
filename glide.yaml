@@ -4,5 +4,6 @@ import:
   subpackages:
   - credhub
   - credhub/auth
+  - credhub/credentials
 - package: github.com/atotto/clipboard
 - package: github.com/fatih/color
