@@ -8,6 +8,7 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -44,20 +45,55 @@ func main() {
 
 func printHelp() {
 	fmt.Println("Usage: [VAR_NAME]\nUsage: [VAR_NAME] -v (Shows the value)\nUsage: [VAR_NAME] -V (Shows all the details for this secret)")
-	fmt.Println("\nIf a single, exactly matching secret is found, then it is copied to clipboard. If not, then a search is done using the provided name," +
+	fmt.Println("\nIf a single, exactly or partially matching secret is found, then it is copied to clipboard. If not, then a search is done using the provided name," +
 		"and the names of any secrets found are printed.")
 	fmt.Println("\nNote that '-V' only works when one match is found, however '-v' will still show the values even if many matches are found.")
 }
 
-func grep(searchResults credentials.FindResults) {
-	if verbose {
-		for i := 0; i < len(searchResults.Credentials); i++ {
-			c, _ := ch.GetLatestVersion(searchResults.Credentials[i].Name)
-			fmt.Println(color.RedString(c.Name)+":", color.YellowString(getVarString(c.Name, c.Type)))
-		}
-	} else {
-		for i := 0; i < len(searchResults.Credentials); i++ {
-			fmt.Println(searchResults.Credentials[i].Name)
+func grep(creds []credentials.Base) {
+	//Sort so that vars of each deployment are grouped together
+	sort.Slice(creds, func(i, j int) bool { return creds[i].Name < creds[j].Name })
+
+	//Set colors to use
+	deploymentColor := color.New(color.FgGreen)
+	varValueColor := color.New(color.FgYellow)
+	varNameColor := color.New(color.FgCyan)
+
+	verbose = verbose || xVerbose //Show values if either is set
+	currDeployment := ""
+	for i := 0; i < len(creds); i++ {
+
+		switch strings.Count(creds[i].Name, "/") {
+		//Var unrelated to a bosh or a specific deployment
+		case 1:
+			if currDeployment != "/" {
+				currDeployment = "/"
+				_, _ = deploymentColor.Println(currDeployment + ":")
+			}
+
+			if verbose {
+				c, _ := ch.GetLatestVersion(creds[i].Name)
+				varNameColor.Print("  " + c.Name[1:] + ": ")
+				_, _ = varValueColor.Println(getVarString(c.Name, c.Type))
+			} else {
+				_, _ = varNameColor.Println("  " + creds[i].Name[1:])
+			}
+
+		//Var part of a deployment
+		case 3:
+			parts := strings.Split(creds[i].Name, "/")
+			if parts[2] != currDeployment {
+				currDeployment = parts[2]
+				_, _ = deploymentColor.Println(currDeployment + ":")
+			}
+
+			if verbose {
+				c, _ := ch.GetLatestVersion(creds[i].Name)
+				varNameColor.Print("  " + parts[3] + ": ")
+				_, _ = varValueColor.Println(getVarString(c.Name, c.Type))
+			} else {
+				_, _ = varNameColor.Println("  " + parts[3])
+			}
 		}
 	}
 }
@@ -69,12 +105,12 @@ func getVar() {
 		r, _ := ch.FindByPartialName(os.Args[1])
 		switch len(r.Credentials) {
 		case 0:
-			fmt.Println(color.RedString(os.Args[1]), "not found under any path")
+			fmt.Println(os.Args[1], "not found under any path")
 			return
 		case 1:
 			c, _ = ch.GetLatestVersion(r.Credentials[0].Name)
 		default:
-			grep(r)
+			grep(r.Credentials)
 			return
 		}
 	}
@@ -96,9 +132,9 @@ func getVar() {
 		fmt.Println(color.GreenString("Value:"), color.YellowString(varString))
 		fmt.Println(color.GreenString("Creation Date:"), c.VersionCreatedAt)
 	} else if verbose || !copied {
-		fmt.Println(color.RedString(c.Name)+":", color.YellowString(varString))
+		fmt.Println(color.CyanString(c.Name)+":", color.YellowString(varString))
 	} else {
-		fmt.Println(color.RedString(c.Name), "copied to clipboard!")
+		fmt.Println(color.CyanString(c.Name), "copied to clipboard!")
 		return
 	}
 
