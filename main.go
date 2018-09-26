@@ -127,7 +127,7 @@ func getVar() {
 		fmt.Println(color.GreenString("ID:"), c.Id)
 		fmt.Println(color.GreenString("Base:"), c.Base)
 		fmt.Println(color.GreenString("Metadata:"), c.Metadata)
-		fmt.Println(color.GreenString("Name:"), color.RedString(c.Name))
+		fmt.Println(color.GreenString("Name:"), color.CyanString(c.Name))
 		fmt.Println(color.GreenString("Type:"), c.Type)
 		fmt.Println(color.GreenString("Value:"), color.YellowString(varString))
 		fmt.Println(color.GreenString("Creation Date:"), c.VersionCreatedAt)
