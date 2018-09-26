@@ -23,4 +23,4 @@ _testmain.go
 *.test
 *.prof
 
-get-credhub-var
+get-credhub-var/get-credhub-var
