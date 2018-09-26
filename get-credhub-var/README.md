@@ -1,4 +1,4 @@
-# Get CredHub Var
+# Get-CredHub-Var
 
 This is a small cmd line program that lets you very easily search and retrieve any secret stored on CredHub, including certificates.
 Search results are sorted and categorized by the BOSH deployment the variable is in. If a single password is found then it will be copied to your clipboard automatically.
