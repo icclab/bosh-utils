@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"code.cloudfoundry.org/credhub-cli/credhub"
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"code.cloudfoundry.org/credhub-cli/credhub/credentials"
 	"fmt"
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
+	"gopkg.in/yaml.v2"
 	"os"
 	"sort"
 	"strings"
@@ -40,7 +42,12 @@ func main() {
 		}
 	}
 
-	getVar()
+	if os.Args[1] == "backup" {
+		backup("")
+	} else {
+
+		getVar()
+	}
 }
 
 func printHelp() {
@@ -141,6 +148,21 @@ func getVar() {
 	if copied {
 		fmt.Println("Value copied clipboard!")
 	}
+}
+
+func backup(dep string) {
+	results, _ := ch.FindByPartialName("")
+	creds := results.Credentials
+
+	f, _ := os.Create("bosh-backup.yml")
+	defer f.Close()
+	writer := bufio.NewWriter(f)
+	for i := 0; i < len(creds); i++ {
+		cred, _ := ch.GetLatestVersion(creds[i].Name)
+		a, _ := yaml.Marshal(&cred)
+		writer.Write(a)
+	}
+	writer.Flush()
 }
 
 func getVarString(name string, varType string) string {
