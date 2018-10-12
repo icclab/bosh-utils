@@ -1,0 +1,52 @@
+hash: f2efa164af706749a99188d0151ef17c0b5703592a160297d67596c4f9b7e884
+updated: 2018-10-12T11:08:22.738599922+02:00
+imports:
+- name: code.cloudfoundry.org/credhub-cli
+  version: eb7e0395068ac6d7c1e809f3faa214b7db0fcacf
+  subpackages:
+  - credhub
+  - credhub/auth
+  - credhub/auth/uaa
+  - credhub/credentials
+  - credhub/credentials/generate
+  - credhub/credentials/values
+  - credhub/permissions
+  - credhub/server
+  - errors
+- name: github.com/atotto/clipboard
+  version: 4abe406ed04191dec2b588300def4e74d659253c
+- name: github.com/cloudfoundry/go-socks5
+  version: 54f73bdb8a8e85a6611d3d29ab9bbf98c2a060d7
+- name: github.com/cloudfoundry/socks5-proxy
+  version: 3659db090cb23a57807b53e2f8580b2427dc2659
+- name: github.com/fatih/color
+  version: 3f9d52f7176a6927daacff70a3e8d1dc2025c53e
+- name: github.com/hashicorp/go-version
+  version: b5a281d3160aa11950a6182bd9a9dc2cb1e02d50
+- name: github.com/mattn/go-colorable
+  version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
+- name: github.com/mattn/go-isatty
+  version: 3fb116b820352b7f0c281308a4d6250c22d94e27
+- name: golang.org/x/crypto
+  version: 7c1a557ab941a71c619514f229f0b27ccb0c27cf
+  subpackages:
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+  - internal/chacha20
+  - internal/subtle
+  - poly1305
+  - ssh
+- name: golang.org/x/net
+  version: 49bb7cea24b1df9410e1712aa6433dae904ff66a
+  subpackages:
+  - context
+  - internal/socks
+  - proxy
+- name: golang.org/x/sys
+  version: fa43e7bc11baaae89f3f902b2b4d832b68234844
+  subpackages:
+  - unix
+- name: gopkg.in/yaml.v2
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+testImports: []

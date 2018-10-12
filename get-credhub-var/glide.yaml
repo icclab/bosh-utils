@@ -1,4 +1,4 @@
-package: github.engineering.zhaw.ch/kaio/get-credhub-var
+package: github.com/icclab/bosh-utils/get-credhub-var
 import:
 - package: code.cloudfoundry.org/credhub-cli
   subpackages:
@@ -7,3 +7,4 @@ import:
   - credhub/credentials
 - package: github.com/atotto/clipboard
 - package: github.com/fatih/color
+- package: gopkg.in/yaml.v2
