@@ -11,6 +11,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 )
 
 var ch *credhub.CredHub
@@ -152,8 +153,7 @@ func getVar() {
 func backup(dep string) {
 	results, _ := ch.FindByPartialName("")
 	creds := results.Credentials
-
-	f, _ := os.Create("bosh-backup.yml")
+	f, _ := os.Create("credhub-backup-" + time.Now().UTC().Format(time.RFC3339) + ".yml")
 	defer f.Close()
 	writer := bufio.NewWriter(f)
 
