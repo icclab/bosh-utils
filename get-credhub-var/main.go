@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
-	"gopkg.in/yaml.v2"
 	"os"
 	"sort"
 	"strings"
@@ -81,7 +80,7 @@ func grep(creds []credentials.Base) {
 			if verbose {
 				c, _ := ch.GetLatestVersion(creds[i].Name)
 				varNameColor.Print("  " + c.Name[1:] + ": ")
-				_, _ = varValueColor.Println(getVarString(c.Name, c.Type))
+				_, _ = varValueColor.Println(getVarString(c.Name, c.Type, 4))
 			} else {
 				_, _ = varNameColor.Println("  " + creds[i].Name[1:])
 			}
@@ -97,7 +96,7 @@ func grep(creds []credentials.Base) {
 			if verbose {
 				c, _ := ch.GetLatestVersion(creds[i].Name)
 				varNameColor.Print("  " + parts[3] + ": ")
-				_, _ = varValueColor.Println(getVarString(c.Name, c.Type))
+				_, _ = varValueColor.Println(getVarString(c.Name, c.Type, 4))
 			} else {
 				_, _ = varNameColor.Println("  " + parts[3])
 			}
@@ -123,7 +122,7 @@ func getVar() {
 	}
 
 	//If we found only one matching value then copy to clipboard and print according to required verbosity
-	varString := getVarString(c.Name, c.Type)
+	varString := getVarString(c.Name, c.Type, 4)
 	copied := false
 	if c.Type == "value" || c.Type == "password" {
 		_ = clipboard.WriteAll(varString)
@@ -157,15 +156,29 @@ func backup(dep string) {
 	f, _ := os.Create("bosh-backup.yml")
 	defer f.Close()
 	writer := bufio.NewWriter(f)
+
+	writer.WriteString("credentials:\n")
 	for i := 0; i < len(creds); i++ {
 		cred, _ := ch.GetLatestVersion(creds[i].Name)
-		a, _ := yaml.Marshal(&cred)
-		writer.Write(a)
+
+		writer.WriteString("- name: " + cred.Name + "\n")
+		writer.WriteString("  type: " + cred.Type + "\n")
+		val := getVarString(cred.Name, cred.Type, 4)
+
+		if cred.Type == "certificate" || cred.Type == "rsa" || cred.Type == "ssh" {
+			writer.WriteString("  value:" + val + "\n")
+		} else if cred.Type == "password" || cred.Type == "value" {
+			writer.WriteString("  value: " + val + "\n")
+		} else if cred.Type == "user" {
+			writer.WriteString("  value: " + strings.Replace(val, "\n", "\n  ", -1) + "\n")
+		}
 	}
 	writer.Flush()
 }
 
-func getVarString(name string, varType string) string {
+func getVarString(name string, varType string, baseIndent int) string {
+	spaces := strings.Repeat(" ", baseIndent)
+
 	switch varType {
 	case "value":
 		v, _ := ch.GetLatestValue(name)
@@ -176,22 +189,29 @@ func getVarString(name string, varType string) string {
 	case "certificate":
 		v, _ := ch.GetLatestCertificate(name)
 		cert := v.Value
-		return fmt.Sprintf("\nca: |\n%s\ncertificate: |\n%s\nprivate_key: |\n%s", cert.Ca, cert.Certificate, cert.PrivateKey)
+		return fmt.Sprintf("\n"+spaces+"ca: |\n"+spaces+"  %s\n"+spaces+"certificate: |\n"+spaces+"  %s\n"+spaces+"private_key: |\n"+spaces+"  %s",
+			strings.Replace(cert.Ca, "\n", "\n"+spaces+"  ", -1),
+			strings.Replace(cert.Certificate, "\n", "\n"+spaces+"  ", -1),
+			strings.Replace(cert.PrivateKey, "\n", "\n"+spaces+"  ", -1))
 	case "json":
 		v, _ := ch.GetLatestJSON(name)
 		return fmt.Sprintf("\n%v", v.Value)
 	case "rsa":
 		v, _ := ch.GetLatestRSA(name)
 		rsa := v.Value
-		return fmt.Sprintf("\npublic_key: |\n%s\nprivate_key: |\n%s", rsa.PublicKey, rsa.PrivateKey)
+		return fmt.Sprintf("\n"+spaces+"public_key: |\n"+spaces+"  %s\n"+spaces+"private_key: |\n"+spaces+"  %s",
+			strings.Replace(rsa.PublicKey, "\n", "\n"+spaces+"  ", -1),
+			strings.Replace(rsa.PrivateKey, "\n", "\n"+spaces+"  ", -1))
 	case "ssh":
 		v, _ := ch.GetLatestSSH(name)
 		ssh := v.Value
-		return fmt.Sprintf("\npublic_key: |\n%s\nprivate_key: |\n%s", ssh.PublicKey, ssh.PrivateKey)
+		return fmt.Sprintf("\n"+spaces+"public_key: |\n"+spaces+"  %s\n"+spaces+"private_key: |\n"+spaces+"  %s",
+			strings.Replace(ssh.PublicKey, "\n", "\n"+spaces+"  ", -1),
+			strings.Replace(ssh.PrivateKey, "\n", "\n"+spaces+"  ", -1))
 	case "user":
 		v, _ := ch.GetLatestUser(name)
 		user := v.Value
-		return fmt.Sprintf("\nusername: %s\npassword: %s", user.Username, user.Password)
+		return fmt.Sprintf("\n  username: %s\n  password: %s", user.Username, user.Password)
 	default:
 		return ""
 	}
