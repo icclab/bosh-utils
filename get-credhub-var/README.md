@@ -12,7 +12,7 @@ you can simply choose a release and download the binary and similarly move to pa
 
 To run you need the following environment variables specified correctly for the CredHub deployment you want to target:
 
-- `BOSH_ENVIRONMENT`: Should be like this `https://192.168.50.6:25555`
+- `BOSH_ENVIRONMENT`: Should look something like this `https://192.168.50.6:25555`
 - `CREDHUB_CLIENT`
 - `CREDHUB_SECRET`
 - `CREDHUB_CA_CERT`
