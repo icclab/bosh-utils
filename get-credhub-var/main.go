@@ -2,16 +2,17 @@ package main
 
 import (
 	"bufio"
-	"code.cloudfoundry.org/credhub-cli/credhub"
-	"code.cloudfoundry.org/credhub-cli/credhub/auth"
-	"code.cloudfoundry.org/credhub-cli/credhub/credentials"
 	"fmt"
-	"github.com/atotto/clipboard"
-	"github.com/fatih/color"
 	"os"
 	"sort"
 	"strings"
 	"time"
+
+	"code.cloudfoundry.org/credhub-cli/credhub"
+	"code.cloudfoundry.org/credhub-cli/credhub/auth"
+	"code.cloudfoundry.org/credhub-cli/credhub/credentials"
+	"github.com/atotto/clipboard"
+	"github.com/fatih/color"
 )
 
 var ch *credhub.CredHub

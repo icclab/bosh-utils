@@ -18,7 +18,7 @@ To run you need the following environment variables specified correctly for the 
 - `CREDHUB_CA_CERT`
 
 The image below shows the result of running `get-credhub-var ""`, which retrieves all the variables under all deployments.
-The `/` section contains variables that **not** part of any BOSH deployment.
+The `/` section contains variables that are **not** part of any BOSH deployment.
 
 ![Example results](imgs/example.png)
 
